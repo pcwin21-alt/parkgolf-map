@@ -49,7 +49,7 @@ function createMarkers() {
       border:2px solid rgba(255,255,255,0.7);
       font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
     `;
-    content.textContent = `${course.holes}H`;
+    content.textContent = course.name;
 
     const overlay = new kakao.maps.CustomOverlay({
       position,
@@ -60,7 +60,7 @@ function createMarkers() {
     });
 
     content.addEventListener('click', () => {
-      openInfoWindow(position, course);
+      openInfoWindow(overlay, course);
       scrollToCard(course.id);
       setActiveCard(course.id);
     });
@@ -73,26 +73,26 @@ function createMarkers() {
 // ===== 인포윈도우 =====
 function buildInfoContent(course) {
   const phone = course.phone
-    ? `<a href="tel:${course.phone}">${course.phone}</a>`
-    : `<span class="iw-empty">미등록</span>`;
-  const hours = course.hours || `<span class="iw-empty">미등록</span>`;
-  const fee   = course.fee   || `<span class="iw-empty">미등록</span>`;
+    ? `<div class="iw-row iw-phone"><span class="iw-label">전화</span><a href="tel:${course.phone}">${course.phone}</a></div>`
+    : '';
 
   return `
     <div class="info-window">
       <div class="iw-name">⛳ ${course.name}</div>
       <div class="iw-row"><span class="iw-label">주소</span><span>${course.address}</span></div>
-      <div class="iw-row"><span class="iw-label">홀수</span><span>${course.holes}홀</span></div>
-      <div class="iw-row iw-phone"><span class="iw-label">전화</span><span>${phone}</span></div>
-      <div class="iw-row"><span class="iw-label">운영</span><span>${hours}</span></div>
-      <div class="iw-row"><span class="iw-label">요금</span><span>${fee}</span></div>
+      ${phone}
     </div>
   `;
 }
 
-function openInfoWindow(position, course) {
-  infoWindow.setContent(buildInfoContent(course));
-  infoWindow.open(map, position);
+function openInfoWindow(anchor, course) {
+  infoWindow.close();
+  infoWindow = new kakao.maps.InfoWindow({
+    position: anchor.getPosition(),
+    content: buildInfoContent(course),
+    removable: true
+  });
+  infoWindow.open(map);
 
   if (window.innerWidth <= 768) {
     openSheet(course);
@@ -128,7 +128,8 @@ function renderList(list) {
       const position = new kakao.maps.LatLng(course.lat, course.lng);
       map.setCenter(position);
       map.setLevel(4);
-      openInfoWindow(position, course);
+      const overlay = overlays.find(o => o._courseId === id);
+      if (overlay) openInfoWindow(overlay, course);
       setActiveCard(id);
     });
   });
