@@ -1,0 +1,329 @@
+/* ===== CSS 변수 ===== */
+:root {
+  --primary: #2d7a3a;
+  --primary-light: #4caf50;
+  --primary-bg: #eef6ef;
+  --accent: #1b5e20;
+  --text: #1a1a1a;
+  --text-sub: #666;
+  --border: #e0e0e0;
+  --card-bg: #fff;
+  --header-h: 52px;
+  --sidebar-w: 340px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.12);
+  --radius: 10px;
+}
+
+/* ===== 리셋 ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; color: var(--text); background: #f5f5f5; }
+button { cursor: pointer; border: none; background: none; font: inherit; }
+input { font: inherit; outline: none; border: none; }
+select { font: inherit; }
+
+/* ===== 헤더 ===== */
+.header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--header-h);
+  background: var(--primary);
+  color: #fff;
+  z-index: 100;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 16px;
+}
+.header-title {
+  font-size: 17px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.header-title .icon { font-size: 20px; }
+.header-count {
+  font-size: 13px;
+  background: rgba(255,255,255,0.2);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+/* ===== 앱 레이아웃 ===== */
+.app {
+  display: flex;
+  height: 100vh;
+  padding-top: var(--header-h);
+}
+
+/* ===== 사이드바 ===== */
+.sidebar {
+  width: var(--sidebar-w);
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg);
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+}
+
+/* 검색 */
+.search-wrap {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.search-input {
+  width: 100%;
+  padding: 9px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fafafa;
+  transition: border-color 0.2s;
+}
+.search-input:focus { border-color: var(--primary-light); background: #fff; }
+
+/* 필터 */
+.filter-wrap {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.filter-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.tab {
+  padding: 5px 11px;
+  font-size: 13px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  color: var(--text-sub);
+  background: #fafafa;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.tab:hover { border-color: var(--primary-light); color: var(--primary); }
+.tab.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+.jeonnam-select {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-sub);
+  background: #fafafa;
+  display: none; /* 전남 탭 클릭시 표시 */
+}
+.jeonnam-select.visible { display: block; }
+
+/* 코스 목록 */
+.course-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+.course-list::-webkit-scrollbar { width: 4px; }
+.course-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.no-result {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-sub);
+  font-size: 14px;
+}
+
+/* 코스 카드 */
+.course-card {
+  padding: 12px;
+  margin-bottom: 6px;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--border);
+  background: var(--card-bg);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.course-card:hover { border-color: var(--primary-light); box-shadow: var(--shadow); }
+.course-card.active {
+  border-color: var(--primary);
+  background: var(--primary-bg);
+}
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+.card-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+}
+.card-holes {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--primary);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+.card-address {
+  font-size: 12px;
+  color: var(--text-sub);
+  line-height: 1.4;
+}
+.card-phone {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* ===== 지도 영역 ===== */
+.map-wrap {
+  flex: 1;
+  position: relative;
+}
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+/* 현재 위치 버튼 */
+.btn-location {
+  position: absolute;
+  bottom: 24px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  z-index: 10;
+  transition: box-shadow 0.15s;
+}
+.btn-location:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+
+/* ===== 인포윈도우 ===== */
+.info-window {
+  min-width: 240px;
+  max-width: 300px;
+  padding: 14px 16px;
+  font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+}
+.info-window .iw-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+.info-window .iw-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 13px;
+  color: #333;
+  margin-bottom: 4px;
+  line-height: 1.5;
+}
+.info-window .iw-label {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--text-sub);
+  min-width: 36px;
+}
+.info-window .iw-phone a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+.info-window .iw-phone a:hover { text-decoration: underline; }
+.info-window .iw-empty { color: #bbb; font-style: italic; }
+
+/* ===== 모바일 bottom sheet ===== */
+.detail-sheet {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: #fff;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+  z-index: 200;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  max-height: 55vh;
+  overflow-y: auto;
+}
+.detail-sheet.open { transform: translateY(0); }
+.sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 10px auto 0;
+}
+.sheet-content {
+  padding: 12px 20px 32px;
+}
+.sheet-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 190;
+}
+.sheet-overlay.visible { display: block; }
+
+/* ===== 반응형: 모바일 ===== */
+@media (max-width: 768px) {
+  :root { --header-h: 48px; }
+
+  .app { flex-direction: column; }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    max-height: 45vh;
+  }
+
+  .course-list { max-height: 28vh; }
+
+  .map-wrap {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .detail-sheet { display: block; }
+
+  .header-title { font-size: 15px; }
+
+  .filter-tabs { gap: 4px; }
+  .tab { padding: 4px 9px; font-size: 12px; }
+}
+
+@media (max-width: 480px) {
+  .sidebar { max-height: 40vh; }
+  .course-list { max-height: 22vh; }
+}

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>광주·전남 파크골프장 지도</title>
+  <link rel="stylesheet" href="css/style.css">
+<!-- 네이버 지도 API -->
+  <script type="text/javascript"
+    src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=bzsp5h2yjd">
+  </script>
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-inner">
+      <h1 class="header-title">
+        <span class="icon">⛳</span> 광주·전남 파크골프장 지도
+      </h1>
+      <span class="header-count" id="headerCount">총 45개</span>
+    </div>
+  </header>
+
+  <div class="app">
+
+    <!-- 사이드바 -->
+    <aside class="sidebar">
+      <!-- 검색 -->
+      <div class="search-wrap">
+        <input
+          type="search"
+          id="searchInput"
+          class="search-input"
+          placeholder="코스명 또는 주소 검색"
+          autocomplete="off"
+        >
+      </div>
+
+      <!-- 필터 탭: 광주 구 / 전남 -->
+      <div class="filter-wrap">
+        <div class="filter-tabs" id="filterTabs">
+          <button class="tab active" data-filter="all">전체</button>
+          <button class="tab" data-filter="광주전체">광주</button>
+          <button class="tab" data-filter="동구">동구</button>
+          <button class="tab" data-filter="서구">서구</button>
+          <button class="tab" data-filter="남구">남구</button>
+          <button class="tab" data-filter="북구">북구</button>
+          <button class="tab" data-filter="광산구">광산구</button>
+          <button class="tab" data-filter="전남전체">전남</button>
+        </div>
+
+        <!-- 전남 시군 드롭다운 -->
+        <select class="jeonnam-select" id="jeonnamSelect">
+          <option value="">전남 시·군 선택</option>
+          <option value="광양시">광양시</option>
+          <option value="곡성군">곡성군</option>
+          <option value="구례군">구례군</option>
+          <option value="나주시">나주시</option>
+          <option value="담양군">담양군</option>
+          <option value="목포시">목포시</option>
+          <option value="무안군">무안군</option>
+          <option value="보성군">보성군</option>
+          <option value="순천시">순천시</option>
+          <option value="영광군">영광군</option>
+          <option value="영암군">영암군</option>
+          <option value="완도군">완도군</option>
+          <option value="장성군">장성군</option>
+          <option value="장흥군">장흥군</option>
+          <option value="진도군">진도군</option>
+          <option value="함평군">함평군</option>
+          <option value="해남군">해남군</option>
+          <option value="화순군">화순군</option>
+        </select>
+      </div>
+
+      <!-- 코스 목록 -->
+      <div class="course-list" id="courseList">
+        <!-- JS로 렌더링 -->
+      </div>
+    </aside>
+
+    <!-- 지도 영역 -->
+    <main class="map-wrap">
+      <div id="map"></div>
+
+      <!-- 현재 위치 버튼 -->
+      <button class="btn-location" id="btnLocation" title="내 위치로 이동">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+          <circle cx="12" cy="12" r="9" stroke-dasharray="2 2" opacity="0.3"/>
+        </svg>
+      </button>
+    </main>
+
+  </div>
+
+  <!-- 모바일용 코스 상세 bottom sheet -->
+  <div class="detail-sheet" id="detailSheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-content" id="sheetContent"></div>
+  </div>
+  <div class="sheet-overlay" id="sheetOverlay"></div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
