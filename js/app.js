@@ -42,19 +42,31 @@ function createMarkers() {
     const position = new kakao.maps.LatLng(course.lat, course.lng);
 
     const content = document.createElement('div');
-    content.style.cssText = `
-      background:${color};color:#fff;font-size:11px;font-weight:700;
-      padding:4px 8px;border-radius:12px;white-space:nowrap;
-      box-shadow:0 2px 6px rgba(0,0,0,0.25);cursor:pointer;
-      border:2px solid rgba(255,255,255,0.7);
-      font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+    content.style.cssText = `display:flex;flex-direction:column;align-items:center;cursor:pointer;`;
+    content.innerHTML = `
+      <div style="
+        width:30px;height:30px;
+        background:${color};
+        border-radius:50%;
+        border:2.5px solid #fff;
+        box-shadow:0 2px 6px rgba(0,0,0,0.3);
+        display:flex;align-items:center;justify-content:center;
+        font-size:14px;
+      ">⛳</div>
+      <div style="
+        width:0;height:0;
+        border-left:5px solid transparent;
+        border-right:5px solid transparent;
+        border-top:8px solid ${color};
+        margin-top:-1px;
+        filter:drop-shadow(0 1px 1px rgba(0,0,0,0.2));
+      "></div>
     `;
-    content.textContent = course.name;
 
     const overlay = new kakao.maps.CustomOverlay({
       position,
       content,
-      yAnchor: 0.5,
+      yAnchor: 1,
       xAnchor: 0.5,
       map
     });
