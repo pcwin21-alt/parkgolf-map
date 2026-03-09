@@ -1,7 +1,7 @@
-/* 광주·전남 파크골프장 지도 - app.js */
+/* 광주·전남 파크골프장 지도 - app.js (카카오맵) */
 
 let map;
-let markers = [];
+let overlays = [];
 let infoWindow;
 let courses = [];
 let activeCardId = null;
@@ -11,17 +11,13 @@ let currentFilter = 'all';
 async function init() {
   courses = await loadCourses();
 
-  map = new naver.maps.Map('map', {
-    center: new naver.maps.LatLng(35.0, 126.9),
-    zoom: 9,
-    mapTypeId: naver.maps.MapTypeId.NORMAL,
-    zoomControl: true,
-    zoomControlOptions: {
-      position: naver.maps.Position.TOP_RIGHT
-    }
+  const container = document.getElementById('map');
+  map = new kakao.maps.Map(container, {
+    center: new kakao.maps.LatLng(35.0, 126.9),
+    level: 10
   });
 
-  infoWindow = new naver.maps.InfoWindow({ anchorSkew: true });
+  infoWindow = new kakao.maps.InfoWindow({ removable: true });
 
   createMarkers();
   renderList(courses);
@@ -37,43 +33,40 @@ async function loadCourses() {
 
 // ===== 마커 생성 =====
 function createMarkers() {
-  markers.forEach(m => m.setMap(null));
-  markers = [];
+  overlays.forEach(o => o.setMap(null));
+  overlays = [];
 
   courses.forEach(course => {
     const isGwangju = course.region === '광주광역시';
     const color = isGwangju ? '#2d7a3a' : '#1565c0';
+    const position = new kakao.maps.LatLng(course.lat, course.lng);
 
-    const marker = new naver.maps.Marker({
-      position: new naver.maps.LatLng(course.lat, course.lng),
-      map,
-      title: course.name,
-      icon: {
-        content: `<div style="
-          background:${color};
-          color:#fff;
-          font-size:11px;
-          font-weight:700;
-          padding:4px 8px;
-          border-radius:12px;
-          white-space:nowrap;
-          box-shadow:0 2px 6px rgba(0,0,0,0.25);
-          cursor:pointer;
-          border:2px solid rgba(255,255,255,0.7);
-          font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
-        ">${course.holes}H</div>`,
-        anchor: new naver.maps.Point(20, 16)
-      }
+    const content = document.createElement('div');
+    content.style.cssText = `
+      background:${color};color:#fff;font-size:11px;font-weight:700;
+      padding:4px 8px;border-radius:12px;white-space:nowrap;
+      box-shadow:0 2px 6px rgba(0,0,0,0.25);cursor:pointer;
+      border:2px solid rgba(255,255,255,0.7);
+      font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+    `;
+    content.textContent = `${course.holes}H`;
+
+    const overlay = new kakao.maps.CustomOverlay({
+      position,
+      content,
+      yAnchor: 0.5,
+      xAnchor: 0.5,
+      map
     });
 
-    naver.maps.Event.addListener(marker, 'click', () => {
-      openInfoWindow(marker, course);
+    content.addEventListener('click', () => {
+      openInfoWindow(position, course);
       scrollToCard(course.id);
       setActiveCard(course.id);
     });
 
-    marker._courseId = course.id;
-    markers.push(marker);
+    overlay._courseId = course.id;
+    overlays.push(overlay);
   });
 }
 
@@ -97,11 +90,10 @@ function buildInfoContent(course) {
   `;
 }
 
-function openInfoWindow(marker, course) {
+function openInfoWindow(position, course) {
   infoWindow.setContent(buildInfoContent(course));
-  infoWindow.open(map, marker);
+  infoWindow.open(map, position);
 
-  // 모바일에서는 bottom sheet도 표시
   if (window.innerWidth <= 768) {
     openSheet(course);
   }
@@ -127,19 +119,16 @@ function renderList(list) {
     </div>
   `).join('');
 
-  // 카드 클릭 이벤트
   container.querySelectorAll('.course-card').forEach(card => {
     card.addEventListener('click', () => {
       const id = card.dataset.id;
       const course = courses.find(c => c.id === id);
       if (!course) return;
 
-      const marker = markers.find(m => m._courseId === id);
-      if (marker) {
-        map.setCenter(new naver.maps.LatLng(course.lat, course.lng));
-        map.setZoom(14);
-        openInfoWindow(marker, course);
-      }
+      const position = new kakao.maps.LatLng(course.lat, course.lng);
+      map.setCenter(position);
+      map.setLevel(4);
+      openInfoWindow(position, course);
       setActiveCard(id);
     });
   });
@@ -165,62 +154,46 @@ function scrollToCard(id) {
 function applyFilter(filterValue, searchText = '') {
   currentFilter = filterValue;
   const query = searchText.trim().toLowerCase();
-
   const gwangjuDistricts = ['동구','서구','남구','북구','광산구'];
 
   const filtered = courses.filter(c => {
-    // 검색어 필터
     if (query && !c.name.toLowerCase().includes(query) && !c.address.toLowerCase().includes(query)) {
       return false;
     }
-    // 지역 필터
     switch (filterValue) {
       case 'all': return true;
       case '광주전체': return c.region === '광주광역시';
       case '전남전체': return c.region === '전라남도';
       default:
-        if (gwangjuDistricts.includes(filterValue)) {
-          return c.district === filterValue;
-        }
-        return c.district === filterValue; // 전남 시군
+        if (gwangjuDistricts.includes(filterValue)) return c.district === filterValue;
+        return c.district === filterValue;
     }
   });
 
-  // 마커 표시/숨김
-  markers.forEach(m => {
-    const course = courses.find(c => c.id === m._courseId);
-    if (!course) return;
-    const visible = filtered.some(c => c.id === m._courseId);
-    m.setMap(visible ? map : null);
+  overlays.forEach(o => {
+    const visible = filtered.some(c => c.id === o._courseId);
+    o.setMap(visible ? map : null);
   });
 
   renderList(filtered);
   updateCount(filtered.length);
 
-  // 필터 적용 시 지도 뷰 조정
-  if (filtered.length > 0) {
-    fitMapToCourses(filtered);
-  }
+  if (filtered.length > 0) fitMapToCourses(filtered);
 }
 
 function fitMapToCourses(list) {
   if (list.length === 1) {
-    map.setCenter(new naver.maps.LatLng(list[0].lat, list[0].lng));
-    map.setZoom(14);
+    map.setCenter(new kakao.maps.LatLng(list[0].lat, list[0].lng));
+    map.setLevel(4);
     return;
   }
-  const lats = list.map(c => c.lat);
-  const lngs = list.map(c => c.lng);
-  const bounds = new naver.maps.LatLngBounds(
-    new naver.maps.LatLng(Math.min(...lats) - 0.05, Math.min(...lngs) - 0.05),
-    new naver.maps.LatLng(Math.max(...lats) + 0.05, Math.max(...lngs) + 0.05)
-  );
-  map.fitBounds(bounds);
+  const bounds = new kakao.maps.LatLngBounds();
+  list.forEach(c => bounds.extend(new kakao.maps.LatLng(c.lat, c.lng)));
+  map.setBounds(bounds);
 }
 
 // ===== 이벤트 바인딩 =====
 function bindEvents() {
-  // 필터 탭
   document.getElementById('filterTabs').addEventListener('click', e => {
     const tab = e.target.closest('.tab');
     if (!tab) return;
@@ -234,18 +207,14 @@ function bindEvents() {
     select.classList.toggle('visible', isJeonnam);
     if (!isJeonnam) select.value = '';
 
-    const search = document.getElementById('searchInput').value;
-    applyFilter(filter, search);
+    applyFilter(filter, document.getElementById('searchInput').value);
   });
 
-  // 전남 시군 드롭다운
   document.getElementById('jeonnamSelect').addEventListener('change', e => {
     const val = e.target.value;
-    const search = document.getElementById('searchInput').value;
-    applyFilter(val || '전남전체', search);
+    applyFilter(val || '전남전체', document.getElementById('searchInput').value);
   });
 
-  // 검색
   let searchTimer;
   document.getElementById('searchInput').addEventListener('input', e => {
     clearTimeout(searchTimer);
@@ -254,7 +223,6 @@ function bindEvents() {
     }, 200);
   });
 
-  // 현재 위치
   document.getElementById('btnLocation').addEventListener('click', () => {
     if (!navigator.geolocation) {
       alert('이 브라우저에서는 위치 기능을 지원하지 않습니다.');
@@ -262,21 +230,18 @@ function bindEvents() {
     }
     navigator.geolocation.getCurrentPosition(
       pos => {
-        const { latitude: lat, longitude: lng } = pos.coords;
-        map.setCenter(new naver.maps.LatLng(lat, lng));
-        map.setZoom(13);
+        map.setCenter(new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude));
+        map.setLevel(4);
       },
       () => alert('위치 정보를 가져올 수 없습니다. 브라우저 권한을 확인하세요.')
     );
   });
 
-  // 지도 클릭 시 인포윈도우 닫기
-  naver.maps.Event.addListener(map, 'click', () => {
+  kakao.maps.event.addListener(map, 'click', () => {
     infoWindow.close();
     closeSheet();
   });
 
-  // sheet overlay 클릭
   document.getElementById('sheetOverlay').addEventListener('click', closeSheet);
 }
 
