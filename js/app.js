@@ -111,6 +111,18 @@ function openInfoWindow(anchor, course) {
   }
 }
 
+function getHolesLabel(course) {
+  return typeof course.holes === 'number' && course.holes > 0
+    ? `${course.holes}H`
+    : '미상';
+}
+
+function getHolesText(course) {
+  return typeof course.holes === 'number' && course.holes > 0
+    ? `${course.holes}홀`
+    : '홀수 미상';
+}
+
 // ===== 코스 목록 렌더링 =====
 function renderList(list) {
   const container = document.getElementById('courseList');
@@ -124,7 +136,7 @@ function renderList(list) {
     <div class="course-card${c.id === activeCardId ? ' active' : ''}" data-id="${c.id}">
       <div class="card-header">
         <div class="card-name">${c.name}</div>
-        <div class="card-holes">${c.holes}H</div>
+        <div class="card-holes">${getHolesLabel(c)}</div>
       </div>
       <div class="card-address">${c.address}</div>
       ${c.phone ? `<div class="card-phone">📞 <a href="tel:${c.phone}">${c.phone}</a></div>` : ''}
@@ -269,7 +281,7 @@ function openSheet(course) {
       <div style="font-size:17px;font-weight:700;color:#2d7a3a;margin-bottom:8px;">⛳ ${course.name}</div>
       <div style="font-size:13px;color:#666;line-height:2;">
         <div>📍 ${course.address}</div>
-        <div>🏌️ ${course.holes}홀</div>
+        <div>🏌️ ${getHolesText(course)}</div>
         <div>📞 ${phone}</div>
         ${course.hours ? `<div>🕐 ${course.hours}</div>` : ''}
         ${course.fee   ? `<div>💴 ${course.fee}</div>` : ''}
