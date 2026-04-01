@@ -63,7 +63,7 @@ select { font: inherit; }
 
 /* ===== 앱 레이아웃 ===== */
 .page-shell {
-  min-height: calc(100vh - var(--bottom-banner-space));
+  height: calc(100vh - var(--bottom-banner-space));
   padding-top: var(--header-h);
   display: flex;
   flex-direction: column;
@@ -71,7 +71,8 @@ select { font: inherit; }
 .app {
   display: flex;
   flex: 1;
-  min-height: calc(100vh - var(--header-h) - var(--bottom-banner-space));
+  height: calc(100vh - var(--header-h) - var(--bottom-banner-space));
+  min-height: 0;
 }
 
 /* ===== 하단 광고 배너 ===== */
