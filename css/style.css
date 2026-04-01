@@ -16,7 +16,12 @@
 
 /* ===== 리셋 ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; color: var(--text); background: #f5f5f5; }
+body {
+  min-height: 100vh;
+  font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  color: var(--text);
+  background: #f5f5f5;
+}
 button { cursor: pointer; border: none; background: none; font: inherit; }
 input { font: inherit; outline: none; border: none; }
 select { font: inherit; }
@@ -54,10 +59,120 @@ select { font: inherit; }
 }
 
 /* ===== 앱 레이아웃 ===== */
+.page-shell {
+  min-height: 100vh;
+  padding-top: var(--header-h);
+  display: flex;
+  flex-direction: column;
+}
 .app {
   display: flex;
-  height: 100vh;
-  padding-top: var(--header-h);
+  flex: 1;
+  min-height: 0;
+}
+
+/* ===== 하단 광고 배너 ===== */
+.bottom-ad {
+  padding: 12px 16px 16px;
+  background: linear-gradient(180deg, rgba(245,245,245,0) 0%, rgba(238,246,239,0.88) 100%);
+}
+.bottom-ad-inner {
+  position: relative;
+  overflow: hidden;
+  max-width: 1200px;
+  min-height: 112px;
+  margin: 0 auto;
+  padding: 18px 22px;
+  border-radius: 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) auto;
+  gap: 16px;
+  align-items: end;
+  background: linear-gradient(135deg, #143d1c 0%, #2d7a3a 54%, #4caf50 100%);
+  color: #fff;
+  box-shadow: 0 18px 40px rgba(27,94,32,0.22);
+}
+.bottom-ad-inner::before {
+  content: "";
+  position: absolute;
+  right: -42px;
+  bottom: -84px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+}
+.bottom-ad-inner::after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  left: 54%;
+  width: 120px;
+  height: 120px;
+  border-radius: 28px;
+  border: 1px solid rgba(255,255,255,0.12);
+  transform: rotate(18deg);
+}
+.bottom-ad-copy,
+.bottom-ad-meta {
+  position: relative;
+  z-index: 1;
+}
+.bottom-ad-copy {
+  word-break: keep-all;
+}
+.bottom-ad-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 24px;
+  padding: 0 10px;
+  margin-bottom: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.16);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+.bottom-ad-kicker {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.82);
+}
+.bottom-ad-title {
+  max-width: 620px;
+  font-size: 24px;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+.bottom-ad-text {
+  max-width: 600px;
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.84);
+}
+.bottom-ad-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  align-self: center;
+}
+.bottom-ad-meta span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.14);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 /* ===== 사이드바 ===== */
@@ -320,9 +435,55 @@ select { font: inherit; }
 
   .filter-tabs { gap: 4px; }
   .tab { padding: 4px 9px; font-size: 12px; }
+
+  .bottom-ad {
+    padding: 10px 12px 14px;
+  }
+
+  .bottom-ad-inner {
+    min-height: 0;
+    padding: 16px 16px 18px;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .bottom-ad-inner::after {
+    left: auto;
+    right: 18px;
+    top: 12px;
+    width: 92px;
+    height: 92px;
+  }
+
+  .bottom-ad-kicker { font-size: 12px; }
+  .bottom-ad-title {
+    max-width: none;
+    font-size: 19px;
+  }
+  .bottom-ad-text {
+    max-width: none;
+    font-size: 13px;
+  }
+
+  .bottom-ad-meta {
+    justify-content: flex-start;
+  }
+
+  .bottom-ad-meta span {
+    min-height: 34px;
+    padding: 0 12px;
+    font-size: 12px;
+  }
 }
 
 @media (max-width: 480px) {
   .sidebar { max-height: 40vh; }
   .course-list { max-height: 22vh; }
+
+  .bottom-ad-inner {
+    padding: 14px 14px 16px;
+    border-radius: 16px;
+  }
+
+  .bottom-ad-title { font-size: 17px; }
 }
