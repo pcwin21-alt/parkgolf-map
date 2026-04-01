@@ -20,6 +20,7 @@ async function init() {
   infoWindow = new kakao.maps.InfoWindow({ removable: true });
 
   createMarkers();
+  renderTrustSummary(courses);
   renderList(courses);
   updateCount(courses.length);
   bindEvents();
@@ -30,7 +31,93 @@ async function init() {
 // ===== 데이터 로드 =====
 async function loadCourses() {
   const res = await fetch('data/courses.json');
-  return res.json();
+  const data = await res.json();
+  return sortCourses(data.map(normalizeCourse));
+}
+
+function normalizeCourse(course) {
+  return {
+    ...course,
+    status: course.status || (course.phone ? '운영중' : '확인필요'),
+    source: course.source || '정보 출처 확인 중',
+    updatedAt: course.updatedAt || '',
+    closedDays: course.closedDays || '',
+    parking: course.parking || '',
+    restroom: course.restroom || '',
+    beginnerFriendly: course.beginnerFriendly || ''
+  };
+}
+
+function sortCourses(list) {
+  return [...list].sort((a, b) => {
+    const statusGap = getStatusPriority(a) - getStatusPriority(b);
+    if (statusGap !== 0) return statusGap;
+
+    const phoneGap = getPhonePriority(a) - getPhonePriority(b);
+    if (phoneGap !== 0) return phoneGap;
+
+    const districtGap = a.district.localeCompare(b.district, 'ko');
+    if (districtGap !== 0) return districtGap;
+
+    return a.name.localeCompare(b.name, 'ko');
+  });
+}
+
+function getStatusPriority(course) {
+  return course.status === '운영중' ? 0 : 1;
+}
+
+function getPhonePriority(course) {
+  return course.phone ? 0 : 1;
+}
+
+function formatUpdatedAt(dateText) {
+  if (!dateText) return '확인 중';
+  return dateText.replaceAll('-', '.');
+}
+
+function getUpdatedLabel(course) {
+  return course.updatedAt
+    ? `${formatUpdatedAt(course.updatedAt)} 기준`
+    : '업데이트 확인 중';
+}
+
+function getSourceLabel(course) {
+  return course.source || '정보 출처 확인 중';
+}
+
+function getStatusClass(course) {
+  return course.status === '운영중' ? 'status-running' : 'status-checking';
+}
+
+function getStatusLabel(course) {
+  return course.status || '확인필요';
+}
+
+function getPhoneButtonMarkup(course) {
+  if (!course.phone) {
+    return '<div class="card-phone-button disabled">전화번호 확인 필요</div>';
+  }
+
+  return `<a class="card-phone-button" href="tel:${course.phone}">전화 ${course.phone}</a>`;
+}
+
+function renderTrustSummary(list) {
+  const latest = list
+    .map(course => course.updatedAt)
+    .filter(Boolean)
+    .sort()
+    .at(-1);
+
+  const sources = [...new Set(list.map(course => course.source).filter(Boolean))];
+  const sourceSummary = sources.length > 2
+    ? `${sources[0]} 외 ${sources.length - 1}건`
+    : sources.join(', ');
+
+  document.getElementById('lastUpdatedText').textContent = latest
+    ? formatUpdatedAt(latest)
+    : '확인 중';
+  document.getElementById('sourceSummaryText').textContent = sourceSummary || '확인 중';
 }
 
 // ===== 마커 생성 =====
@@ -88,13 +175,19 @@ function createMarkers() {
 function buildInfoContent(course) {
   const phone = course.phone
     ? `<div class="iw-row iw-phone"><span class="iw-label">전화</span><a href="tel:${course.phone}">${course.phone}</a></div>`
-    : '';
+    : '<div class="iw-row"><span class="iw-label">전화</span><span class="iw-empty">전화번호 확인 필요</span></div>';
 
   return `
     <div class="info-window">
+      <div class="iw-top">
+        <span class="status-badge ${getStatusClass(course)}">${getStatusLabel(course)}</span>
+        <span class="iw-date">${getUpdatedLabel(course)}</span>
+      </div>
       <div class="iw-name">⛳ ${course.name}</div>
+      <div class="iw-row"><span class="iw-label">지역</span><span>${course.region} ${course.district}</span></div>
       <div class="iw-row"><span class="iw-label">주소</span><span>${course.address}</span></div>
       ${phone}
+      <div class="iw-source">출처: ${getSourceLabel(course)}</div>
     </div>
   `;
 }
@@ -136,14 +229,24 @@ function renderList(list) {
 
   container.innerHTML = list.map(c => `
     <div class="course-card${c.id === activeCardId ? ' active' : ''}" data-id="${c.id}">
-      <div class="card-header">
-        <div class="card-name">${c.name}</div>
-        <div class="card-holes">${getHolesLabel(c)}</div>
+      <div class="card-top">
+        <span class="status-badge ${getStatusClass(c)}">${getStatusLabel(c)}</span>
+        <span class="card-updated">${getUpdatedLabel(c)}</span>
+      </div>
+      <div class="card-name">${c.name}</div>
+      <div class="card-meta">
+        <span class="card-chip">${c.district}</span>
+        <span class="card-chip">${getHolesText(c)}</span>
       </div>
       <div class="card-address">${c.address}</div>
-      ${c.phone ? `<div class="card-phone">📞 <a href="tel:${c.phone}">${c.phone}</a></div>` : ''}
+      <div class="card-source">출처: ${getSourceLabel(c)}</div>
+      <div class="card-actions">${getPhoneButtonMarkup(c)}</div>
     </div>
   `).join('');
+
+  container.querySelectorAll('.card-phone-button').forEach(button => {
+    button.addEventListener('click', e => e.stopPropagation());
+  });
 
   container.querySelectorAll('.course-card').forEach(card => {
     card.addEventListener('click', () => {
@@ -183,7 +286,7 @@ function applyFilter(filterValue, searchText = '') {
   const query = searchText.trim().toLowerCase();
   const gwangjuDistricts = ['동구','서구','남구','북구','광산구'];
 
-  const filtered = courses.filter(c => {
+  const filtered = sortCourses(courses.filter(c => {
     if (query && !c.name.toLowerCase().includes(query) && !c.address.toLowerCase().includes(query)) {
       return false;
     }
@@ -195,7 +298,7 @@ function applyFilter(filterValue, searchText = '') {
         if (gwangjuDistricts.includes(filterValue)) return c.district === filterValue;
         return c.district === filterValue;
     }
-  });
+  }));
 
   overlays.forEach(o => {
     const visible = filtered.some(c => c.id === o._courseId);
@@ -217,6 +320,30 @@ function fitMapToCourses(list) {
   const bounds = new kakao.maps.LatLngBounds();
   list.forEach(c => bounds.extend(new kakao.maps.LatLng(c.lat, c.lng)));
   map.setBounds(bounds);
+}
+
+function buildDetailRows(course) {
+  const rows = [
+    ['지역', `${course.region} ${course.district}`],
+    ['주소', course.address],
+    ['홀수', getHolesText(course)],
+    ['운영시간', course.hours],
+    ['휴장일', course.closedDays],
+    ['이용요금', course.fee],
+    ['주차', course.parking],
+    ['화장실', course.restroom],
+    ['초보추천', course.beginnerFriendly]
+  ];
+
+  return rows
+    .filter(([, value]) => value)
+    .map(([label, value]) => `
+      <div class="sheet-detail-row">
+        <span class="sheet-detail-label">${label}</span>
+        <span class="sheet-detail-value">${value}</span>
+      </div>
+    `)
+    .join('');
 }
 
 // ===== 이벤트 바인딩 =====
@@ -283,20 +410,20 @@ function bindEvents() {
 
 // ===== 모바일 bottom sheet =====
 function openSheet(course) {
-  const phone = course.phone
-    ? `<a href="tel:${course.phone}" style="color:#2d7a3a;font-weight:700;">${course.phone}</a>`
-    : '미등록';
-
   document.getElementById('sheetContent').innerHTML = `
-    <div style="margin-bottom:12px;">
-      <div style="font-size:17px;font-weight:700;color:#2d7a3a;margin-bottom:8px;">⛳ ${course.name}</div>
-      <div style="font-size:13px;color:#666;line-height:2;">
-        <div>📍 ${course.address}</div>
-        <div>🏌️ ${getHolesText(course)}</div>
-        <div>📞 ${phone}</div>
-        ${course.hours ? `<div>🕐 ${course.hours}</div>` : ''}
-        ${course.fee   ? `<div>💴 ${course.fee}</div>` : ''}
-      </div>
+    <div class="sheet-status-row">
+      <span class="status-badge ${getStatusClass(course)}">${getStatusLabel(course)}</span>
+      <span class="sheet-updated">${getUpdatedLabel(course)}</span>
+    </div>
+    <div class="sheet-name">⛳ ${course.name}</div>
+    <div class="sheet-source">출처: ${getSourceLabel(course)}</div>
+    <div class="sheet-call-wrap">
+      ${course.phone
+        ? `<a class="sheet-phone-button" href="tel:${course.phone}">전화 ${course.phone}</a>`
+        : '<div class="sheet-phone-button disabled">전화번호 확인 필요</div>'}
+    </div>
+    <div class="sheet-detail-list">
+      ${buildDetailRows(course)}
     </div>
   `;
   document.getElementById('detailSheet').classList.add('open');
