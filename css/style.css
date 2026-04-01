@@ -9,6 +9,7 @@
   --border: #e0e0e0;
   --card-bg: #fff;
   --header-h: 52px;
+  --bottom-banner-space: 206px;
   --sidebar-w: 340px;
   --shadow: 0 2px 8px rgba(0,0,0,0.12);
   --radius: 10px;
@@ -18,9 +19,11 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   min-height: 100vh;
+  padding-bottom: var(--bottom-banner-space);
   font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
   color: var(--text);
   background: #f5f5f5;
+  overflow-x: hidden;
 }
 button { cursor: pointer; border: none; background: none; font: inherit; }
 input { font: inherit; outline: none; border: none; }
@@ -60,7 +63,7 @@ select { font: inherit; }
 
 /* ===== 앱 레이아웃 ===== */
 .page-shell {
-  min-height: 100vh;
+  min-height: calc(100vh - var(--bottom-banner-space));
   padding-top: var(--header-h);
   display: flex;
   flex-direction: column;
@@ -68,11 +71,16 @@ select { font: inherit; }
 .app {
   display: flex;
   flex: 1;
-  min-height: 0;
+  min-height: calc(100vh - var(--header-h) - var(--bottom-banner-space));
 }
 
 /* ===== 하단 광고 배너 ===== */
 .bottom-ad {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 120;
   padding: 12px 16px 16px;
   background: linear-gradient(180deg, rgba(245,245,245,0) 0%, rgba(238,246,239,0.88) 100%);
 }
@@ -125,9 +133,9 @@ select { font: inherit; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 42px;
-  height: 24px;
-  padding: 0 10px;
+  min-width: 74px;
+  height: 28px;
+  padding: 0 12px;
   margin-bottom: 10px;
   border-radius: 999px;
   border: 1px solid rgba(255,255,255,0.22);
@@ -377,7 +385,7 @@ select { font: inherit; }
 .detail-sheet {
   display: none;
   position: fixed;
-  bottom: 0; left: 0; right: 0;
+  bottom: var(--bottom-banner-space); left: 0; right: 0;
   background: #fff;
   border-radius: 16px 16px 0 0;
   box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
@@ -401,7 +409,10 @@ select { font: inherit; }
 .sheet-overlay {
   display: none;
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: var(--bottom-banner-space);
+  left: 0;
   background: rgba(0,0,0,0.3);
   z-index: 190;
 }
@@ -409,7 +420,10 @@ select { font: inherit; }
 
 /* ===== 반응형: 모바일 ===== */
 @media (max-width: 768px) {
-  :root { --header-h: 48px; }
+  :root {
+    --header-h: 48px;
+    --bottom-banner-space: 272px;
+  }
 
   .app { flex-direction: column; }
 
@@ -437,7 +451,7 @@ select { font: inherit; }
   .tab { padding: 4px 9px; font-size: 12px; }
 
   .bottom-ad {
-    padding: 10px 12px 14px;
+    padding: 10px 12px calc(14px + env(safe-area-inset-bottom));
   }
 
   .bottom-ad-inner {
@@ -477,6 +491,8 @@ select { font: inherit; }
 }
 
 @media (max-width: 480px) {
+  :root { --bottom-banner-space: 286px; }
+
   .sidebar { max-height: 40vh; }
   .course-list { max-height: 22vh; }
 

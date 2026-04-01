@@ -23,6 +23,8 @@ async function init() {
   renderList(courses);
   updateCount(courses.length);
   bindEvents();
+  updateBottomBannerSpace();
+  map.relayout();
 }
 
 // ===== 데이터 로드 =====
@@ -268,6 +270,15 @@ function bindEvents() {
   });
 
   document.getElementById('sheetOverlay').addEventListener('click', closeSheet);
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      updateBottomBannerSpace();
+      map.relayout();
+    }, 120);
+  });
 }
 
 // ===== 모바일 bottom sheet =====
@@ -295,6 +306,14 @@ function openSheet(course) {
 function closeSheet() {
   document.getElementById('detailSheet').classList.remove('open');
   document.getElementById('sheetOverlay').classList.remove('visible');
+}
+
+function updateBottomBannerSpace() {
+  const banner = document.getElementById('bottomBanner');
+  if (!banner) return;
+
+  const height = Math.ceil(banner.getBoundingClientRect().height);
+  document.documentElement.style.setProperty('--bottom-banner-space', `${height + 12}px`);
 }
 
 // ===== 시작 =====
